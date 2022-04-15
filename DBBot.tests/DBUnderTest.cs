@@ -217,7 +217,7 @@ namespace DBBot.tests
         }
 
         [Fact]
-        public void DBTC05() //Adding an Order - Positive Scenario
+        public void DBTC05() //Adding an Orders - Positive Scenario
         {
             using (var connection = new SqliteConnection(DB.GetConnectionString()))
             {
@@ -233,16 +233,16 @@ namespace DBBot.tests
                 commandDelete.CommandText = @"DELETE FROM Delivery";
                 nRowsDeleted  = commandDelete.ExecuteNonQuery();
 
-                commandDelete.CommandText = @"DELETE FROM Order";
+                commandDelete.CommandText = @"DELETE FROM Orders";
                 nRowsDeleted  = commandDelete.ExecuteNonQuery();
 
-                //Adding a Order 
+                //Adding a Orders 
                 int    orderNumber  = 1; 
                 int    qtyProducts  = 3;
                 string oDateRegist  = DateTime.UtcNow.ToString("yyyy-MM-dd"); 
 
                 commandInsert.CommandText =
-                @"INSERT INTO Order(OrderNumber, QtyProducts, DateRegist)
+                @"INSERT INTO Orders(OrderNumber, QtyProducts, DateRegist)
                   VALUES($orderNumber, $qtyProducts, $oDateRegist)";
                 commandInsert.Parameters.AddWithValue("$orderNumber" , orderNumber);
                 commandInsert.Parameters.AddWithValue("$qtyProducts" , qtyProducts);
@@ -254,7 +254,7 @@ namespace DBBot.tests
         }
 
         [Fact]
-        public void DBTC06() //Adding an Order - Negative Scenario - Duplicated
+        public void DBTC06() //Adding an Orders - Negative Scenario - Duplicated
         {
             using (var connection = new SqliteConnection(DB.GetConnectionString()))
             {
@@ -271,27 +271,27 @@ namespace DBBot.tests
                 commandDelete.CommandText = @"DELETE FROM Delivery";
                 nRowsDeleted  = commandDelete.ExecuteNonQuery();
 
-                commandDelete.CommandText = @"DELETE FROM Order";
+                commandDelete.CommandText = @"DELETE FROM Orders";
                 nRowsDeleted  = commandDelete.ExecuteNonQuery();
 
-                //Adding an Order 
+                //Adding an Orders 
                 int    orderNumber  = 1; 
                 int    qtyProducts  = 3;
                 string oDateRegist  = DateTime.UtcNow.ToString("yyyy-MM-dd"); 
 
                 commandInsert.CommandText =
-                @"INSERT INTO Order(OrderNumber, QtyProducts, DateRegist)
+                @"INSERT INTO Orders(OrderNumber, QtyProducts, DateRegist)
                   VALUES($orderNumber, $qtyProducts, $oDateRegist)";
                 commandInsert.Parameters.AddWithValue("$orderNumber" , orderNumber);
                 commandInsert.Parameters.AddWithValue("$qtyProducts" , qtyProducts);
                 commandInsert.Parameters.AddWithValue("$oDateRegist" , oDateRegist);
                 nRowsInserted = commandInsert.ExecuteNonQuery();
 
-                //Adding an Order 
+                //Adding an Orders 
                 try
                 {
                     commandInsert.CommandText =
-                    @"INSERT INTO Order(OrderNumber, QtyProducts, DateRegist)
+                    @"INSERT INTO Orders(OrderNumber, QtyProducts, DateRegist)
                       VALUES($orderNumber, $qtyProducts, $oDateRegist)";
                     commandInsert.Parameters.AddWithValue("$orderNumber" , orderNumber);
                     commandInsert.Parameters.AddWithValue("$qtyProducts" , qtyProducts);
@@ -327,7 +327,7 @@ namespace DBBot.tests
                 commandDelete.CommandText = @"DELETE FROM Delivery";
                 nRowsDeleted  = commandDelete.ExecuteNonQuery();
 
-                commandDelete.CommandText = @"DELETE FROM Order";
+                commandDelete.CommandText = @"DELETE FROM Orders";
                 nRowsDeleted  = commandDelete.ExecuteNonQuery();
 
                 commandDelete.CommandText = @"DELETE FROM Vehicle";
@@ -370,14 +370,14 @@ namespace DBBot.tests
                 commandInsert.Parameters.AddWithValue("$vDateRegist" , vDateRegist);
                 nRowsInserted = commandInsert.ExecuteNonQuery();
 
-                //For Order Table
+                //For Orders Table
                 int    orderNumber  = 1; 
                 int    qtyProducts  = 3;
                 string oDateRegist  = DateTime.UtcNow.ToString("yyyy-MM-dd"); 
 
-                //Adding a Order 
+                //Adding a Orders 
                 commandInsert.CommandText =
-                @"INSERT INTO Order(OrderNumber, QtyProducts, DateRegist)
+                @"INSERT INTO Orders(OrderNumber, QtyProducts, DateRegist)
                   VALUES($orderNumber, $qtyProducts, $oDateRegist)";
                 commandInsert.Parameters.AddWithValue("$orderNumber" , orderNumber);
                 commandInsert.Parameters.AddWithValue("$qtyProducts" , qtyProducts);
@@ -400,7 +400,7 @@ namespace DBBot.tests
                 commandInsert.Parameters.AddWithValue("$dDateRegist"          , dDateRegist);
                 nRowsInserted = commandInsert.ExecuteNonQuery();
 
-                Assert.True(4==nRowsInserted);             
+                Assert.True(1==nRowsInserted);             
             }
         }
 
@@ -425,7 +425,7 @@ namespace DBBot.tests
                 commandDelete.CommandText = @"DELETE FROM Delivery";
                 nRowsDeleted  = commandDelete.ExecuteNonQuery();
 
-                commandDelete.CommandText = @"DELETE FROM Order";
+                commandDelete.CommandText = @"DELETE FROM Orders";
                 nRowsDeleted  = commandDelete.ExecuteNonQuery();
 
                 commandDelete.CommandText = @"DELETE FROM Vehicle";
@@ -448,14 +448,14 @@ namespace DBBot.tests
                 commandInsert.Parameters.AddWithValue("$vDateRegist" , vDateRegist);
                 nRowsInserted = commandInsert.ExecuteNonQuery();
 
-                //For Order Table
+                //For Orders Table
                 int    orderNumber  = 1; 
                 int    qtyProducts  = 3;
                 string oDateRegist  = DateTime.UtcNow.ToString("yyyy-MM-dd"); 
 
-                //Adding a Order 
+                //Adding a Orders 
                 commandInsert.CommandText =
-                @"INSERT INTO Order(OrderNumber, QtyProducts, DateRegist)
+                @"INSERT INTO Orders(OrderNumber, QtyProducts, DateRegist)
                   VALUES($orderNumber, $qtyProducts, $oDateRegist)";
                 commandInsert.Parameters.AddWithValue("$orderNumber" , orderNumber);
                 commandInsert.Parameters.AddWithValue("$qtyProducts" , qtyProducts);
@@ -485,7 +485,7 @@ namespace DBBot.tests
                     nRowsNotInserted = 1;
                 }
 
-                Assert.True(2==nRowsInserted && 1==nRowsNotInserted);             
+                Assert.True(1==nRowsInserted && 1==nRowsNotInserted);             
             }
         }
 
@@ -510,7 +510,7 @@ namespace DBBot.tests
                 commandDelete.CommandText = @"DELETE FROM Delivery";
                 nRowsDeleted  = commandDelete.ExecuteNonQuery();
 
-                commandDelete.CommandText = @"DELETE FROM Order";
+                commandDelete.CommandText = @"DELETE FROM Orders";
                 nRowsDeleted  = commandDelete.ExecuteNonQuery();
 
                 commandDelete.CommandText = @"DELETE FROM Vehicle";
@@ -539,18 +539,18 @@ namespace DBBot.tests
                 commandInsert.Parameters.AddWithValue("$pDateRegist" , pDateRegist);
                 nRowsInserted = commandInsert.ExecuteNonQuery();
 
-                //For Order Table
+                //For Orders Table
                 int    orderNumber  = 1; 
                 int    qtyProducts  = 3;
                 string oDateRegist  = DateTime.UtcNow.ToString("yyyy-MM-dd"); 
 
-                //Deleting Order table
-                commandDelete.CommandText = @"DELETE FROM Order";
+                //Deleting Orders table
+                commandDelete.CommandText = @"DELETE FROM Orders";
                 nRowsDeleted  = commandDelete.ExecuteNonQuery();
 
-                //Adding a Order 
+                //Adding a Orders 
                 commandInsert.CommandText =
-                @"INSERT INTO Order(OrderNumber, QtyProducts, DateRegist)
+                @"INSERT INTO Orders(OrderNumber, QtyProducts, DateRegist)
                   VALUES($orderNumber, $qtyProducts, $oDateRegist)";
                 commandInsert.Parameters.AddWithValue("$orderNumber" , orderNumber);
                 commandInsert.Parameters.AddWithValue("$qtyProducts" , qtyProducts);
@@ -580,12 +580,12 @@ namespace DBBot.tests
                     nRowsNotInserted = 1;
                 }
 
-                Assert.True(2==nRowsInserted && 1==nRowsNotInserted);             
+                Assert.True(1==nRowsInserted && 1==nRowsNotInserted);             
             }
         }
 
         [Fact]
-        public void DBTC10() //Adding a Delivery - Negative Scenario - Order Number doesn't exist
+        public void DBTC10() //Adding a Delivery - Negative Scenario - Orders Number doesn't exist
         {
             using (var connection = new SqliteConnection(DB.GetConnectionString()))
             {
@@ -605,7 +605,7 @@ namespace DBBot.tests
                 commandDelete.CommandText = @"DELETE FROM Delivery";
                 nRowsDeleted  = commandDelete.ExecuteNonQuery();
 
-                commandDelete.CommandText = @"DELETE FROM Order";
+                commandDelete.CommandText = @"DELETE FROM Orders";
                 nRowsDeleted  = commandDelete.ExecuteNonQuery();
 
                 commandDelete.CommandText = @"DELETE FROM Vehicle";
@@ -671,7 +671,7 @@ namespace DBBot.tests
                     nRowsNotInserted = 1;
                 }
 
-                Assert.True(2==nRowsInserted && 1==nRowsNotInserted);             
+                Assert.True(1==nRowsInserted && 1==nRowsNotInserted);             
             }
         }
 
@@ -753,7 +753,7 @@ namespace DBBot.tests
                 commandInsert.Parameters.AddWithValue("$oPerson_PhoneNumber"   , oPerson_PhoneNumber);
                 nRowsInserted = commandInsert.ExecuteNonQuery();
 
-                Assert.True(3==nRowsInserted);             
+                Assert.True(1==nRowsInserted);             
             }
         }
 
