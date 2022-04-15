@@ -8,77 +8,621 @@ namespace DBBot.tests
 {
     public class DBUnderTest
     {
-
-        public int nRowsInserted = 0;
-
-        public string phoneNumber  = "4372154699";
-        public int    password     = 1234;
-        public string hierarchy    = "Driver"; 
-        public string firstName    = "Heloisa"; 
-        public string lastName     = "Prog8060";
-        public string pDateRegist  = DateTime.UtcNow.ToString("yyyy-MM-dd"); 
-
-        public string licensePlate = "A1A1A1"; 
-        public string typeVehicle  = "Van";
-        public string vDateRegist  = DateTime.UtcNow.ToString("yyyy-MM-dd"); 
-
-        public int    orderNumber  = 1; 
-        public int    qtyProducts  = 3;
-        public string oDateRegist  = DateTime.UtcNow.ToString("yyyy-MM-dd"); 
-
-        public string person_PhoneNumber   = "4372154699"; 
-        public string vehicle_LicensePlate = "A1A1A1"; 
-        public int    order_OrderNumber    = 1; 
-        public string dDateRegist          = DateTime.UtcNow.ToString("yyyy-MM-dd"); 
-
-        public string dateReceived          = DateTime.UtcNow.ToString("yyyy-MM-dd");
-        public string timeReceived          = DateTime.UtcNow.ToString("hh:mm");
-        public int    valueReceived         = 12345;
-        public string oVehicle_LicensePlate = "A1A1A1"; 
-        public string oPerson_PhoneNumber   = "4372154699"; 
-
         [Fact]
-        public void DeletePersonTable()
+        public void DBTC01() //Adding a Driver - Positive Scenario
         {
             using (var connection = new SqliteConnection(DB.GetConnectionString()))
             {
                 connection.Open();
 
+                int nRowsInserted   = 0;
+                int nRowsDeleted    = 0;
+
                 var commandDelete = connection.CreateCommand();
+                var commandInsert = connection.CreateCommand();
 
-                //Deleting Person table
+                //Deleting All
+                commandDelete.CommandText = @"DELETE FROM Odometer";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                commandDelete.CommandText = @"DELETE FROM Delivery";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
                 commandDelete.CommandText = @"DELETE FROM Person";
-                int nRowsDeleted  = commandDelete.ExecuteNonQuery();
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
 
-                //Deleting Vehicle table
+                //Adding Driver to Person table
+                string phoneNumber  = "4372154699";
+                int    password     = 1234;
+                string hierarchy    = "Driver"; 
+                string firstName    = "Heloisa"; 
+                string lastName     = "Prog8060";
+                string pDateRegist  = DateTime.UtcNow.ToString("yyyy-MM-dd"); 
+
+                commandInsert.CommandText =
+                @"INSERT INTO Person(PhoneNumber, Password, Hierarchy, FirstName, LastName, DateRegist)
+                  VALUES($phoneNumber, $password, $hierarchy, $firstName, $lastName, $pDateRegist)";
+                commandInsert.Parameters.AddWithValue("$phoneNumber" , phoneNumber);
+                commandInsert.Parameters.AddWithValue("$password"    , password);
+                commandInsert.Parameters.AddWithValue("$hierarchy"   , hierarchy);
+                commandInsert.Parameters.AddWithValue("$firstName"   , firstName);
+                commandInsert.Parameters.AddWithValue("$lastName"    , lastName);
+                commandInsert.Parameters.AddWithValue("$pDateRegist" , pDateRegist);
+                nRowsInserted = commandInsert.ExecuteNonQuery();
+
+                Assert.True(1==nRowsInserted);             
+            }
+        }
+
+        [Fact]
+        public void DBTC02() //Adding a Driver - Negative Scenario - Duplicated
+        {
+            using (var connection = new SqliteConnection(DB.GetConnectionString()))
+            {
+                connection.Open();
+
+                int nRowsInserted    = 0;
+                int nRowsDeleted     = 0;
+                int nRowsNotInserted = 0;
+
+                var commandDelete = connection.CreateCommand();
+                var commandInsert = connection.CreateCommand();
+
+                //Deleting All
+                commandDelete.CommandText = @"DELETE FROM Odometer";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                commandDelete.CommandText = @"DELETE FROM Delivery";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                commandDelete.CommandText = @"DELETE FROM Person";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                //Adding a Driver - Duplicated 
+                string phoneNumber  = "4372154699";
+                int    password     = 1234;
+                string hierarchy    = "Driver"; 
+                string firstName    = "Heloisa"; 
+                string lastName     = "Prog8060";
+                string pDateRegist  = DateTime.UtcNow.ToString("yyyy-MM-dd"); 
+
+                commandInsert.CommandText =
+                @"INSERT INTO Person(PhoneNumber, Password, Hierarchy, FirstName, LastName, DateRegist)
+                  VALUES($phoneNumber, $password, $hierarchy, $firstName, $lastName, $pDateRegist)";
+                commandInsert.Parameters.AddWithValue("$phoneNumber" , phoneNumber);
+                commandInsert.Parameters.AddWithValue("$password"    , password);
+                commandInsert.Parameters.AddWithValue("$hierarchy"   , hierarchy);
+                commandInsert.Parameters.AddWithValue("$firstName"   , firstName);
+                commandInsert.Parameters.AddWithValue("$lastName"    , lastName);
+                commandInsert.Parameters.AddWithValue("$pDateRegist" , pDateRegist);
+                nRowsInserted = commandInsert.ExecuteNonQuery();
+
+                try
+                {
+                    commandInsert.CommandText =
+                    @"INSERT INTO Person(PhoneNumber, Password, Hierarchy, FirstName, LastName, DateRegist)
+                      VALUES($phoneNumber, $password, $hierarchy, $firstName, $lastName, $pDateRegist)";
+                    commandInsert.Parameters.AddWithValue("$phoneNumber" , phoneNumber);
+                    commandInsert.Parameters.AddWithValue("$password"    , password);
+                    commandInsert.Parameters.AddWithValue("$hierarchy"   , hierarchy);
+                    commandInsert.Parameters.AddWithValue("$firstName"   , firstName);
+                    commandInsert.Parameters.AddWithValue("$lastName"    , lastName);
+                    commandInsert.Parameters.AddWithValue("$pDateRegist" , pDateRegist);
+                    nRowsInserted = commandInsert.ExecuteNonQuery();
+                }
+                catch (System.Exception)
+                {
+                    nRowsNotInserted = 1;
+                }
+
+                Assert.True(1==nRowsInserted && 1==nRowsNotInserted);             
+            }
+        }
+
+        [Fact]
+        public void DBTC03() //Adding a new Vehicle - Positive Scenario
+        {
+            using (var connection = new SqliteConnection(DB.GetConnectionString()))
+            {
+                connection.Open();
+
+                int nRowsInserted   = 0;
+                int nRowsDeleted    = 0;
+
+                var commandDelete = connection.CreateCommand();
+                var commandInsert = connection.CreateCommand();
+
+                //Deleting All
+                commandDelete.CommandText = @"DELETE FROM Odometer";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                commandDelete.CommandText = @"DELETE FROM Delivery";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
                 commandDelete.CommandText = @"DELETE FROM Vehicle";
                 nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                //Adding a Vehicle 
+                string licensePlate = "A1A1A1"; 
+                string typeVehicle  = "Van";
+                string vDateRegist  = DateTime.UtcNow.ToString("yyyy-MM-dd"); 
+
+                commandInsert.CommandText =
+                @"INSERT INTO Vehicle(LicensePlate, TypeVehicle, DateRegist)
+                  VALUES($licensePlate, $typeVehicle, $vDateRegist)";
+                commandInsert.Parameters.AddWithValue("$licensePlate", licensePlate);
+                commandInsert.Parameters.AddWithValue("$typeVehicle" , typeVehicle);
+                commandInsert.Parameters.AddWithValue("$vDateRegist" , vDateRegist);
+                nRowsInserted = commandInsert.ExecuteNonQuery();
+
+                Assert.True(1==nRowsInserted);             
+            }
+        }
+
+        [Fact]
+        public void DBTC04() //Adding a Vehicle - Negative Scenario - Duplicated
+        {
+            using (var connection = new SqliteConnection(DB.GetConnectionString()))
+            {
+                connection.Open();
+
+                int nRowsInserted    = 0;
+                int nRowsDeleted     = 0;
+                int nRowsNotInserted = 0;
+
+                var commandDelete = connection.CreateCommand();
+                var commandInsert = connection.CreateCommand();
+
+                //Deleting All
+                commandDelete.CommandText = @"DELETE FROM Odometer";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                commandDelete.CommandText = @"DELETE FROM Delivery";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                commandDelete.CommandText = @"DELETE FROM Vehicle";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                //Adding a Vehicle 
+                string licensePlate = "A1A1A1"; 
+                string typeVehicle  = "Van";
+                string vDateRegist  = DateTime.UtcNow.ToString("yyyy-MM-dd"); 
+
+                commandInsert.CommandText =
+                @"INSERT INTO Vehicle(LicensePlate, TypeVehicle, DateRegist)
+                  VALUES($licensePlate, $typeVehicle, $vDateRegist)";
+                commandInsert.Parameters.AddWithValue("$licensePlate", licensePlate);
+                commandInsert.Parameters.AddWithValue("$typeVehicle" , typeVehicle);
+                commandInsert.Parameters.AddWithValue("$vDateRegist" , vDateRegist);
+                nRowsInserted = commandInsert.ExecuteNonQuery();
+
+                //Adding the same Vehicle - Again 
+                try
+                {
+                    commandInsert.CommandText =
+                    @"INSERT INTO Vehicle(LicensePlate, TypeVehicle, DateRegist)
+                      VALUES($licensePlate, $typeVehicle, $vDateRegist)";
+                    commandInsert.Parameters.AddWithValue("$licensePlate", licensePlate);
+                    commandInsert.Parameters.AddWithValue("$typeVehicle" , typeVehicle);
+                    commandInsert.Parameters.AddWithValue("$vDateRegist" , vDateRegist);
+                    nRowsInserted = commandInsert.ExecuteNonQuery();
+                }
+                catch (System.Exception)
+                {
+                    nRowsNotInserted = 1;
+                }
+
+                Assert.True(1==nRowsInserted && 1==nRowsNotInserted);             
+            }
+        }
+
+        [Fact]
+        public void DBTC05() //Adding an Order - Positive Scenario
+        {
+            using (var connection = new SqliteConnection(DB.GetConnectionString()))
+            {
+                connection.Open();
+
+                int nRowsInserted   = 0;
+                int nRowsDeleted    = 0;
+
+                var commandDelete = connection.CreateCommand();
+                var commandInsert = connection.CreateCommand();
+
+                //Deleting All
+                commandDelete.CommandText = @"DELETE FROM Delivery";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                commandDelete.CommandText = @"DELETE FROM Order";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                //Adding a Order 
+                int    orderNumber  = 1; 
+                int    qtyProducts  = 3;
+                string oDateRegist  = DateTime.UtcNow.ToString("yyyy-MM-dd"); 
+
+                commandInsert.CommandText =
+                @"INSERT INTO Order(OrderNumber, QtyProducts, DateRegist)
+                  VALUES($orderNumber, $qtyProducts, $oDateRegist)";
+                commandInsert.Parameters.AddWithValue("$orderNumber" , orderNumber);
+                commandInsert.Parameters.AddWithValue("$qtyProducts" , qtyProducts);
+                commandInsert.Parameters.AddWithValue("$oDateRegist" , oDateRegist);
+                nRowsInserted = commandInsert.ExecuteNonQuery();
+
+                Assert.True(1==nRowsInserted);             
+            }
+        }
+
+        [Fact]
+        public void DBTC06() //Adding an Order - Negative Scenario - Duplicated
+        {
+            using (var connection = new SqliteConnection(DB.GetConnectionString()))
+            {
+                connection.Open();
+
+                int nRowsInserted     = 0;
+                int nRowsDeleted      = 0;
+                int nRowsNotInserted  = 0;
+
+                var commandDelete = connection.CreateCommand();
+                var commandInsert = connection.CreateCommand();
+
+                //Deleting All
+                commandDelete.CommandText = @"DELETE FROM Delivery";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                commandDelete.CommandText = @"DELETE FROM Order";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                //Adding an Order 
+                int    orderNumber  = 1; 
+                int    qtyProducts  = 3;
+                string oDateRegist  = DateTime.UtcNow.ToString("yyyy-MM-dd"); 
+
+                commandInsert.CommandText =
+                @"INSERT INTO Order(OrderNumber, QtyProducts, DateRegist)
+                  VALUES($orderNumber, $qtyProducts, $oDateRegist)";
+                commandInsert.Parameters.AddWithValue("$orderNumber" , orderNumber);
+                commandInsert.Parameters.AddWithValue("$qtyProducts" , qtyProducts);
+                commandInsert.Parameters.AddWithValue("$oDateRegist" , oDateRegist);
+                nRowsInserted = commandInsert.ExecuteNonQuery();
+
+                //Adding an Order 
+                try
+                {
+                    commandInsert.CommandText =
+                    @"INSERT INTO Order(OrderNumber, QtyProducts, DateRegist)
+                      VALUES($orderNumber, $qtyProducts, $oDateRegist)";
+                    commandInsert.Parameters.AddWithValue("$orderNumber" , orderNumber);
+                    commandInsert.Parameters.AddWithValue("$qtyProducts" , qtyProducts);
+                    commandInsert.Parameters.AddWithValue("$oDateRegist" , oDateRegist);
+                    nRowsInserted = commandInsert.ExecuteNonQuery();
+                }
+                catch (System.Exception)
+                {
+                    nRowsNotInserted = 1;
+                }
+
+                Assert.True(1==nRowsInserted && 1==nRowsNotInserted);             
+            }
+        }
+
+        [Fact]
+        public void DBTC07() //Adding a Delivery - Positive Scenario
+        {
+            using (var connection = new SqliteConnection(DB.GetConnectionString()))
+            {
+                connection.Open();
+
+                int nRowsInserted   = 0;
+                int nRowsDeleted    = 0;
+
+                var commandDelete = connection.CreateCommand();
+                var commandInsert = connection.CreateCommand();
+
+                //Deleting All
+                commandDelete.CommandText = @"DELETE FROM Odometer";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                commandDelete.CommandText = @"DELETE FROM Delivery";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                commandDelete.CommandText = @"DELETE FROM Order";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                commandDelete.CommandText = @"DELETE FROM Vehicle";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                commandDelete.CommandText = @"DELETE FROM Person";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                //For Persont table
+                string phoneNumber  = "4372154699";
+                int    password     = 1234;
+                string hierarchy    = "Driver"; 
+                string firstName    = "Heloisa"; 
+                string lastName     = "Prog8060";
+                string pDateRegist  = DateTime.UtcNow.ToString("yyyy-MM-dd"); 
+
+                //Adding Driver to Person table
+                commandInsert.CommandText =
+                @"INSERT INTO Person(PhoneNumber, Password, Hierarchy, FirstName, LastName, DateRegist)
+                  VALUES($phoneNumber, $password, $hierarchy, $firstName, $lastName, $pDateRegist)";
+                commandInsert.Parameters.AddWithValue("$phoneNumber" , phoneNumber);
+                commandInsert.Parameters.AddWithValue("$password"    , password);
+                commandInsert.Parameters.AddWithValue("$hierarchy"   , hierarchy);
+                commandInsert.Parameters.AddWithValue("$firstName"   , firstName);
+                commandInsert.Parameters.AddWithValue("$lastName"    , lastName);
+                commandInsert.Parameters.AddWithValue("$pDateRegist" , pDateRegist);
+                nRowsInserted = commandInsert.ExecuteNonQuery();
+
+                //For Vehicle table
+                string licensePlate = "A1A1A1"; 
+                string typeVehicle  = "Van";
+                string vDateRegist  = DateTime.UtcNow.ToString("yyyy-MM-dd"); 
+
+                //Adding a Vehicle 
+                commandInsert.CommandText =
+                @"INSERT INTO Vehicle(LicensePlate, TypeVehicle, DateRegist)
+                  VALUES($licensePlate, $typeVehicle, $vDateRegist)";
+                commandInsert.Parameters.AddWithValue("$licensePlate", licensePlate);
+                commandInsert.Parameters.AddWithValue("$typeVehicle" , typeVehicle);
+                commandInsert.Parameters.AddWithValue("$vDateRegist" , vDateRegist);
+                nRowsInserted = commandInsert.ExecuteNonQuery();
+
+                //For Order Table
+                int    orderNumber  = 1; 
+                int    qtyProducts  = 3;
+                string oDateRegist  = DateTime.UtcNow.ToString("yyyy-MM-dd"); 
+
+                //Adding a Order 
+                commandInsert.CommandText =
+                @"INSERT INTO Order(OrderNumber, QtyProducts, DateRegist)
+                  VALUES($orderNumber, $qtyProducts, $oDateRegist)";
+                commandInsert.Parameters.AddWithValue("$orderNumber" , orderNumber);
+                commandInsert.Parameters.AddWithValue("$qtyProducts" , qtyProducts);
+                commandInsert.Parameters.AddWithValue("$oDateRegist" , oDateRegist);
+                nRowsInserted = commandInsert.ExecuteNonQuery();
+
+                //For Delivery table
+                string person_PhoneNumber   = "4372154699"; 
+                string vehicle_LicensePlate = "A1A1A1"; 
+                int    order_OrderNumber    = 1; 
+                string dDateRegist          = DateTime.UtcNow.ToString("yyyy-MM-dd"); 
+
+                //Adding a Delivery - Positive scenario 
+                commandInsert.CommandText =
+                @"INSERT INTO Delivery(Person_PhoneNumber, Vehicle_LicensePlate, Order_OrderNumber, DateDelivered)
+                  VALUES($person_PhoneNumber, $vehicle_LicensePlate, $order_OrderNumber, $dDateRegist)";
+                commandInsert.Parameters.AddWithValue("$person_PhoneNumber"   , person_PhoneNumber);
+                commandInsert.Parameters.AddWithValue("$vehicle_LicensePlate" , vehicle_LicensePlate);
+                commandInsert.Parameters.AddWithValue("$order_OrderNumber"    , order_OrderNumber);
+                commandInsert.Parameters.AddWithValue("$dDateRegist"          , dDateRegist);
+                nRowsInserted = commandInsert.ExecuteNonQuery();
+
+                Assert.True(4==nRowsInserted);             
+            }
+        }
+
+        [Fact]
+        public void DBTC08() //Adding a Delivery - Negative Scenario - Phone Number doesn't exist
+        {
+            using (var connection = new SqliteConnection(DB.GetConnectionString()))
+            {
+                connection.Open();
+
+                int nRowsInserted    = 0;
+                int nRowsDeleted     = 0;
+                int nRowsNotInserted = 0;
+
+                var commandDelete = connection.CreateCommand();
+                var commandInsert = connection.CreateCommand();
+
+                //Deleting All
+                commandDelete.CommandText = @"DELETE FROM Odometer";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                commandDelete.CommandText = @"DELETE FROM Delivery";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                commandDelete.CommandText = @"DELETE FROM Order";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                commandDelete.CommandText = @"DELETE FROM Vehicle";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                commandDelete.CommandText = @"DELETE FROM Person";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                //For Vehicle table
+                string licensePlate = "A1A1A1"; 
+                string typeVehicle  = "Van";
+                string vDateRegist  = DateTime.UtcNow.ToString("yyyy-MM-dd"); 
+
+                //Adding a Vehicle 
+                commandInsert.CommandText =
+                @"INSERT INTO Vehicle(LicensePlate, TypeVehicle, DateRegist)
+                  VALUES($licensePlate, $typeVehicle, $vDateRegist)";
+                commandInsert.Parameters.AddWithValue("$licensePlate", licensePlate);
+                commandInsert.Parameters.AddWithValue("$typeVehicle" , typeVehicle);
+                commandInsert.Parameters.AddWithValue("$vDateRegist" , vDateRegist);
+                nRowsInserted = commandInsert.ExecuteNonQuery();
+
+                //For Order Table
+                int    orderNumber  = 1; 
+                int    qtyProducts  = 3;
+                string oDateRegist  = DateTime.UtcNow.ToString("yyyy-MM-dd"); 
+
+                //Adding a Order 
+                commandInsert.CommandText =
+                @"INSERT INTO Order(OrderNumber, QtyProducts, DateRegist)
+                  VALUES($orderNumber, $qtyProducts, $oDateRegist)";
+                commandInsert.Parameters.AddWithValue("$orderNumber" , orderNumber);
+                commandInsert.Parameters.AddWithValue("$qtyProducts" , qtyProducts);
+                commandInsert.Parameters.AddWithValue("$oDateRegist" , oDateRegist);
+                nRowsInserted = commandInsert.ExecuteNonQuery();
+
+                //For Delivery table
+                string person_PhoneNumber   = "4372154699"; 
+                string vehicle_LicensePlate = "A1A1A1"; 
+                int    order_OrderNumber    = 1; 
+                string dDateRegist          = DateTime.UtcNow.ToString("yyyy-MM-dd"); 
+
+                //Adding the same Delivery - again
+                try
+                {
+                    commandInsert.CommandText =
+                    @"INSERT INTO Delivery(Person_PhoneNumber, Vehicle_LicensePlate, Order_OrderNumber, DateDelivered)
+                      VALUES($person_PhoneNumber, $vehicle_LicensePlate, $order_OrderNumber, $dDateRegist)";
+                    commandInsert.Parameters.AddWithValue("$person_PhoneNumber"   , person_PhoneNumber);
+                    commandInsert.Parameters.AddWithValue("$vehicle_LicensePlate" , vehicle_LicensePlate);
+                    commandInsert.Parameters.AddWithValue("$order_OrderNumber"    , order_OrderNumber);
+                    commandInsert.Parameters.AddWithValue("$dDateRegist"          , dDateRegist);
+                    nRowsInserted = commandInsert.ExecuteNonQuery();
+                }
+                catch (System.Exception)
+                {
+                    nRowsNotInserted = 1;
+                }
+
+                Assert.True(2==nRowsInserted && 1==nRowsNotInserted);             
+            }
+        }
+
+        [Fact]
+        public void DBTC09() //Adding a Delivery - Negative Scenario - License Plate doesn't exist
+        {
+            using (var connection = new SqliteConnection(DB.GetConnectionString()))
+            {
+                connection.Open();
+
+                int nRowsInserted    = 0;
+                int nRowsDeleted     = 0;
+                int nRowsNotInserted = 0;
+
+                var commandDelete = connection.CreateCommand();
+                var commandInsert = connection.CreateCommand();
+
+                //Deleting All
+                commandDelete.CommandText = @"DELETE FROM Odometer";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                commandDelete.CommandText = @"DELETE FROM Delivery";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                commandDelete.CommandText = @"DELETE FROM Order";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                commandDelete.CommandText = @"DELETE FROM Vehicle";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                commandDelete.CommandText = @"DELETE FROM Person";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                //For Persont table
+                string phoneNumber  = "4372154699";
+                int    password     = 1234;
+                string hierarchy    = "Driver"; 
+                string firstName    = "Heloisa"; 
+                string lastName     = "Prog8060";
+                string pDateRegist  = DateTime.UtcNow.ToString("yyyy-MM-dd"); 
+
+                //Adding Driver to Person table
+                commandInsert.CommandText =
+                @"INSERT INTO Person(PhoneNumber, Password, Hierarchy, FirstName, LastName, DateRegist)
+                  VALUES($phoneNumber, $password, $hierarchy, $firstName, $lastName, $pDateRegist)";
+                commandInsert.Parameters.AddWithValue("$phoneNumber" , phoneNumber);
+                commandInsert.Parameters.AddWithValue("$password"    , password);
+                commandInsert.Parameters.AddWithValue("$hierarchy"   , hierarchy);
+                commandInsert.Parameters.AddWithValue("$firstName"   , firstName);
+                commandInsert.Parameters.AddWithValue("$lastName"    , lastName);
+                commandInsert.Parameters.AddWithValue("$pDateRegist" , pDateRegist);
+                nRowsInserted = commandInsert.ExecuteNonQuery();
+
+                //For Order Table
+                int    orderNumber  = 1; 
+                int    qtyProducts  = 3;
+                string oDateRegist  = DateTime.UtcNow.ToString("yyyy-MM-dd"); 
 
                 //Deleting Order table
                 commandDelete.CommandText = @"DELETE FROM Order";
                 nRowsDeleted  = commandDelete.ExecuteNonQuery();
 
-                //Deleting Delivery table
-                commandDelete.CommandText = @"DELETE FROM Delivery";
-                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+                //Adding a Order 
+                commandInsert.CommandText =
+                @"INSERT INTO Order(OrderNumber, QtyProducts, DateRegist)
+                  VALUES($orderNumber, $qtyProducts, $oDateRegist)";
+                commandInsert.Parameters.AddWithValue("$orderNumber" , orderNumber);
+                commandInsert.Parameters.AddWithValue("$qtyProducts" , qtyProducts);
+                commandInsert.Parameters.AddWithValue("$oDateRegist" , oDateRegist);
+                nRowsInserted = commandInsert.ExecuteNonQuery();
 
-                //Deleting Odometer table
+                //For Delivery table
+                string person_PhoneNumber   = "4372154699"; 
+                string vehicle_LicensePlate = "A1A1A1"; 
+                int    order_OrderNumber    = 1; 
+                string dDateRegist          = DateTime.UtcNow.ToString("yyyy-MM-dd"); 
+
+                //Adding a Delivery
+                try
+                {
+                    commandInsert.CommandText =
+                    @"INSERT INTO Delivery(Person_PhoneNumber, Vehicle_LicensePlate, Order_OrderNumber, DateDelivered)
+                      VALUES($person_PhoneNumber, $vehicle_LicensePlate, $order_OrderNumber, $dDateRegist)";
+                    commandInsert.Parameters.AddWithValue("$person_PhoneNumber"   , person_PhoneNumber);
+                    commandInsert.Parameters.AddWithValue("$vehicle_LicensePlate" , vehicle_LicensePlate);
+                    commandInsert.Parameters.AddWithValue("$order_OrderNumber"    , order_OrderNumber);
+                    commandInsert.Parameters.AddWithValue("$dDateRegist"          , dDateRegist);
+                    nRowsInserted = commandInsert.ExecuteNonQuery();
+                }
+                catch (System.Exception)
+                {
+                    nRowsNotInserted = 1;
+                }
+
+                Assert.True(2==nRowsInserted && 1==nRowsNotInserted);             
+            }
+        }
+
+        [Fact]
+        public void DBTC10() //Adding a Delivery - Negative Scenario - Order Number doesn't exist
+        {
+            using (var connection = new SqliteConnection(DB.GetConnectionString()))
+            {
+                connection.Open();
+
+                int nRowsInserted    = 0;
+                int nRowsDeleted     = 0;
+                int nRowsNotInserted = 0;
+
+                var commandDelete = connection.CreateCommand();
+                var commandInsert = connection.CreateCommand();
+
+                //Deleting All
                 commandDelete.CommandText = @"DELETE FROM Odometer";
                 nRowsDeleted  = commandDelete.ExecuteNonQuery();
 
-                connection.Close();    
-            }
-        }
+                commandDelete.CommandText = @"DELETE FROM Delivery";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
 
-        [Fact]
-        public void DBTC01()
-        {
-            using (var connection = new SqliteConnection(DB.GetConnectionString()))
-            {
-                connection.Open();
+                commandDelete.CommandText = @"DELETE FROM Order";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
 
-                var commandInsert = connection.CreateCommand();
+                commandDelete.CommandText = @"DELETE FROM Vehicle";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
 
+                commandDelete.CommandText = @"DELETE FROM Person";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                //For Persont table
+                string phoneNumber  = "4372154699";
+                int    password     = 1234;
+                string hierarchy    = "Driver"; 
+                string firstName    = "Heloisa"; 
+                string lastName     = "Prog8060";
+                string pDateRegist  = DateTime.UtcNow.ToString("yyyy-MM-dd"); 
+
+                //Adding Driver to Person table
                 commandInsert.CommandText =
                 @"INSERT INTO Person(PhoneNumber, Password, Hierarchy, FirstName, LastName, DateRegist)
                   VALUES($phoneNumber, $password, $hierarchy, $firstName, $lastName, $pDateRegist)";
@@ -90,21 +634,82 @@ namespace DBBot.tests
                 commandInsert.Parameters.AddWithValue("$pDateRegist" , pDateRegist);
                 nRowsInserted = commandInsert.ExecuteNonQuery();
 
-                connection.Close();   
+                //For Vehicle table
+                string licensePlate = "A1A1A1"; 
+                string typeVehicle  = "Van";
+                string vDateRegist  = DateTime.UtcNow.ToString("yyyy-MM-dd"); 
 
+                //Adding a Vehicle 
+                commandInsert.CommandText =
+                @"INSERT INTO Vehicle(LicensePlate, TypeVehicle, DateRegist)
+                  VALUES($licensePlate, $typeVehicle, $vDateRegist)";
+                commandInsert.Parameters.AddWithValue("$licensePlate", licensePlate);
+                commandInsert.Parameters.AddWithValue("$typeVehicle" , typeVehicle);
+                commandInsert.Parameters.AddWithValue("$vDateRegist" , vDateRegist);
+                nRowsInserted = commandInsert.ExecuteNonQuery();
+
+                //For Delivery table
+                string person_PhoneNumber   = "4372154699"; 
+                string vehicle_LicensePlate = "A1A1A1"; 
+                int    order_OrderNumber    = 1; 
+                string dDateRegist          = DateTime.UtcNow.ToString("yyyy-MM-dd"); 
+
+                //Adding a Delivery
+                try
+                {
+                    commandInsert.CommandText =
+                    @"INSERT INTO Delivery(Person_PhoneNumber, Vehicle_LicensePlate, Order_OrderNumber, DateDelivered)
+                      VALUES($person_PhoneNumber, $vehicle_LicensePlate, $order_OrderNumber, $dDateRegist)";
+                    commandInsert.Parameters.AddWithValue("$person_PhoneNumber"   , person_PhoneNumber);
+                    commandInsert.Parameters.AddWithValue("$vehicle_LicensePlate" , vehicle_LicensePlate);
+                    commandInsert.Parameters.AddWithValue("$order_OrderNumber"    , order_OrderNumber);
+                    commandInsert.Parameters.AddWithValue("$dDateRegist"          , dDateRegist);
+                    nRowsInserted = commandInsert.ExecuteNonQuery();
+                }
+                catch (System.Exception)
+                {
+                    nRowsNotInserted = 1;
+                }
+
+                Assert.True(2==nRowsInserted && 1==nRowsNotInserted);             
             }
         }
 
         [Fact]
-        public void DBTC02()
+        public void DBTC11() //Adding an Odometer - Positive Scenario
         {
             using (var connection = new SqliteConnection(DB.GetConnectionString()))
             {
                 connection.Open();
 
+                int nRowsInserted   = 0;
+                int nRowsDeleted    = 0;
+
+                var commandDelete = connection.CreateCommand();
                 var commandInsert = connection.CreateCommand();
 
-                //DBTC4 - Adding a Driver - Duplicated 
+                //Deleting All
+                commandDelete.CommandText = @"DELETE FROM Odometer";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                commandDelete.CommandText = @"DELETE FROM Delivery";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                commandDelete.CommandText = @"DELETE FROM Vehicle";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                commandDelete.CommandText = @"DELETE FROM Person";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                //For Person table
+                string phoneNumber  = "4372154699";
+                int    password     = 1234;
+                string hierarchy    = "Driver"; 
+                string firstName    = "Heloisa"; 
+                string lastName     = "Prog8060";
+                string pDateRegist  = DateTime.UtcNow.ToString("yyyy-MM-dd"); 
+
+                //Adding Driver to Person table
                 commandInsert.CommandText =
                 @"INSERT INTO Person(PhoneNumber, Password, Hierarchy, FirstName, LastName, DateRegist)
                   VALUES($phoneNumber, $password, $hierarchy, $firstName, $lastName, $pDateRegist)";
@@ -116,20 +721,12 @@ namespace DBBot.tests
                 commandInsert.Parameters.AddWithValue("$pDateRegist" , pDateRegist);
                 nRowsInserted = commandInsert.ExecuteNonQuery();
 
-                connection.Close();             
-            }
-        }
+                //For Vehicle table
+                string licensePlate = "A1A1A1"; 
+                string typeVehicle  = "Van";
+                string vDateRegist  = DateTime.UtcNow.ToString("yyyy-MM-dd"); 
 
-        [Fact]
-        public void DBTC03()
-        {
-            using (var connection = new SqliteConnection(DB.GetConnectionString()))
-            {
-                connection.Open();
-
-                var commandInsert = connection.CreateCommand();
-
-                //DBTC5 - Adding a new Vehicle - Positive scenario 
+                //Adding a Vehicle 
                 commandInsert.CommandText =
                 @"INSERT INTO Vehicle(LicensePlate, TypeVehicle, DateRegist)
                   VALUES($licensePlate, $typeVehicle, $vDateRegist)";
@@ -138,20 +735,61 @@ namespace DBBot.tests
                 commandInsert.Parameters.AddWithValue("$vDateRegist" , vDateRegist);
                 nRowsInserted = commandInsert.ExecuteNonQuery();
 
-                connection.Close();             
+                //For Odometer table
+                string dateReceived          = DateTime.UtcNow.ToString("yyyy-MM-dd");
+                string timeReceived          = DateTime.UtcNow.ToString("hh:mm");
+                int    valueReceived         = 12345;
+                string oVehicle_LicensePlate = "A1A1A1"; 
+                string oPerson_PhoneNumber   = "4372154699"; 
+                
+                //Adding Odometer 
+                commandInsert.CommandText =
+                @"INSERT INTO Odometer(DateReceived, TimeReceived, ValueReceived, Vehicle_LicensePlate, Person_PhoneNumber)
+                  VALUES($dateReceived, $timeReceived, $valueReceived, $oVehicle_LicensePlate, $oPerson_PhoneNumber)";
+                commandInsert.Parameters.AddWithValue("$dateReceived"          , dateReceived);
+                commandInsert.Parameters.AddWithValue("$timeReceived"          , timeReceived);
+                commandInsert.Parameters.AddWithValue("$valueReceived"         , valueReceived);
+                commandInsert.Parameters.AddWithValue("$oVehicle_LicensePlate" , oVehicle_LicensePlate);
+                commandInsert.Parameters.AddWithValue("$oPerson_PhoneNumber"   , oPerson_PhoneNumber);
+                nRowsInserted = commandInsert.ExecuteNonQuery();
+
+                Assert.True(3==nRowsInserted);             
             }
         }
 
         [Fact]
-        public void DBTC04()
+        public void DBTC12() //Adding an Odometer - Negative Scenario - Phone Number doesn't exist
         {
             using (var connection = new SqliteConnection(DB.GetConnectionString()))
             {
                 connection.Open();
 
+                int nRowsInserted    = 0;
+                int nRowsDeleted     = 0;
+                int nRowsNotInserted = 0;
+
+                var commandDelete = connection.CreateCommand();
                 var commandInsert = connection.CreateCommand();
 
-                //DBTC5 - Adding a new Vehicle - Positive scenario 
+                //Deleting All
+                commandDelete.CommandText = @"DELETE FROM Odometer";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                commandDelete.CommandText = @"DELETE FROM Delivery";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                commandDelete.CommandText = @"DELETE FROM Vehicle";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                commandDelete.CommandText = @"DELETE FROM Person";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                //For Vehicle table
+                string licensePlate = "A1A1A1"; 
+                string typeVehicle  = "Van";
+                string vDateRegist  = DateTime.UtcNow.ToString("yyyy-MM-dd"); 
+
+                //Adding a Vehicle 
                 commandInsert.CommandText =
                 @"INSERT INTO Vehicle(LicensePlate, TypeVehicle, DateRegist)
                   VALUES($licensePlate, $typeVehicle, $vDateRegist)";
@@ -160,237 +798,106 @@ namespace DBBot.tests
                 commandInsert.Parameters.AddWithValue("$vDateRegist" , vDateRegist);
                 nRowsInserted = commandInsert.ExecuteNonQuery();
 
-                connection.Close();             
+                //For Odometer table
+                string dateReceived          = DateTime.UtcNow.ToString("yyyy-MM-dd");
+                string timeReceived          = DateTime.UtcNow.ToString("hh:mm");
+                int    valueReceived         = 12345;
+                string oVehicle_LicensePlate = "A1A1A1"; 
+                string oPerson_PhoneNumber   = "4372154699"; 
+                
+                try
+                {
+                    commandInsert.CommandText =
+                    @"INSERT INTO Odometer(DateReceived, TimeReceived, ValueReceived, Vehicle_LicensePlate, Person_PhoneNumber)
+                      VALUES($dateReceived, $timeReceived, $valueReceived, $oVehicle_LicensePlate, $oPerson_PhoneNumber)";
+                    commandInsert.Parameters.AddWithValue("$dateReceived"          , dateReceived);
+                    commandInsert.Parameters.AddWithValue("$timeReceived"          , timeReceived);
+                    commandInsert.Parameters.AddWithValue("$valueReceived"         , valueReceived);
+                    commandInsert.Parameters.AddWithValue("$oVehicle_LicensePlate" , oVehicle_LicensePlate);
+                    commandInsert.Parameters.AddWithValue("$oPerson_PhoneNumber"   , oPerson_PhoneNumber);
+                    nRowsInserted = commandInsert.ExecuteNonQuery();
+                }
+                catch (System.Exception)
+                {
+                    nRowsNotInserted = 1;
+                }
+
+                Assert.True(1==nRowsInserted && 1==nRowsNotInserted);             
             }
         }
 
         [Fact]
-        public void DBTC05()
+        public void DBTC13() //Adding an Odometer - Negative Scenario - License Plate doesn't exist
         {
             using (var connection = new SqliteConnection(DB.GetConnectionString()))
             {
                 connection.Open();
 
+                int nRowsInserted    = 0;
+                int nRowsDeleted     = 0;
+                int nRowsNotInserted = 0;
+
+                var commandDelete = connection.CreateCommand();
                 var commandInsert = connection.CreateCommand();
 
-                //DBTC7 - Adding a new Order - Positive scenario 
+                //Deleting All
+                commandDelete.CommandText = @"DELETE FROM Odometer";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                commandDelete.CommandText = @"DELETE FROM Delivery";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                commandDelete.CommandText = @"DELETE FROM Vehicle";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                commandDelete.CommandText = @"DELETE FROM Person";
+                nRowsDeleted  = commandDelete.ExecuteNonQuery();
+
+                //For Persont table
+                string phoneNumber  = "4372154699";
+                int    password     = 1234;
+                string hierarchy    = "Driver"; 
+                string firstName    = "Heloisa"; 
+                string lastName     = "Prog8060";
+                string pDateRegist  = DateTime.UtcNow.ToString("yyyy-MM-dd"); 
+
+                //Adding Driver to Person table
                 commandInsert.CommandText =
-                @"INSERT INTO Order(OrderNumber, QtyProducts, DateRegist)
-                  VALUES($orderNumber, $qtyProducts, $oDateRegist)";
-                commandInsert.Parameters.AddWithValue("$orderNumber" , orderNumber);
-                commandInsert.Parameters.AddWithValue("$qtyProducts" , qtyProducts);
-                commandInsert.Parameters.AddWithValue("$oDateRegist" , oDateRegist);
+                @"INSERT INTO Person(PhoneNumber, Password, Hierarchy, FirstName, LastName, DateRegist)
+                  VALUES($phoneNumber, $password, $hierarchy, $firstName, $lastName, $pDateRegist)";
+                commandInsert.Parameters.AddWithValue("$phoneNumber" , phoneNumber);
+                commandInsert.Parameters.AddWithValue("$password"    , password);
+                commandInsert.Parameters.AddWithValue("$hierarchy"   , hierarchy);
+                commandInsert.Parameters.AddWithValue("$firstName"   , firstName);
+                commandInsert.Parameters.AddWithValue("$lastName"    , lastName);
+                commandInsert.Parameters.AddWithValue("$pDateRegist" , pDateRegist);
                 nRowsInserted = commandInsert.ExecuteNonQuery();
 
-                connection.Close();             
-            }
-        }
+                //For Odometer table
+                string dateReceived          = DateTime.UtcNow.ToString("yyyy-MM-dd");
+                string timeReceived          = DateTime.UtcNow.ToString("hh:mm");
+                int    valueReceived         = 12345;
+                string oVehicle_LicensePlate = "A1A1A1"; 
+                string oPerson_PhoneNumber   = "4372154699"; 
+                
+                try
+                {
+                    commandInsert.CommandText =
+                    @"INSERT INTO Odometer(DateReceived, TimeReceived, ValueReceived, Vehicle_LicensePlate, Person_PhoneNumber)
+                      VALUES($dateReceived, $timeReceived, $valueReceived, $oVehicle_LicensePlate, $oPerson_PhoneNumber)";
+                    commandInsert.Parameters.AddWithValue("$dateReceived"          , dateReceived);
+                    commandInsert.Parameters.AddWithValue("$timeReceived"          , timeReceived);
+                    commandInsert.Parameters.AddWithValue("$valueReceived"         , valueReceived);
+                    commandInsert.Parameters.AddWithValue("$oVehicle_LicensePlate" , oVehicle_LicensePlate);
+                    commandInsert.Parameters.AddWithValue("$oPerson_PhoneNumber"   , oPerson_PhoneNumber);
+                    nRowsInserted = commandInsert.ExecuteNonQuery();
+                }
+                catch (System.Exception)
+                {
+                    nRowsNotInserted = 1;
+                }
 
-        [Fact]
-        public void DBTC06()
-        {
-            using (var connection = new SqliteConnection(DB.GetConnectionString()))
-            {
-                connection.Open();
-
-                var commandInsert = connection.CreateCommand();
-
-                //DBTC9 - Adding a new Order - Negative scenario 
-                commandInsert.CommandText =
-                @"INSERT INTO Order(OrderNumber, QtyProducts, DateRegist)
-                  VALUES($orderNumber, $qtyProducts, $oDateRegist)";
-                commandInsert.Parameters.AddWithValue("$orderNumber" , orderNumber);
-                commandInsert.Parameters.AddWithValue("$qtyProducts" , qtyProducts);
-                commandInsert.Parameters.AddWithValue("$oDateRegist" , oDateRegist);
-                nRowsInserted = commandInsert.ExecuteNonQuery();
-
-                connection.Close();             
-            }
-        }
-
-        [Fact]
-        public void DBTC07()
-        {
-            using (var connection = new SqliteConnection(DB.GetConnectionString()))
-            {
-                connection.Open();
-
-                var commandInsert = connection.CreateCommand();
-
-                //DBTC11 - Adding a new Delivery - Positive scenario 
-                commandInsert.CommandText =
-                @"INSERT INTO Delivery(Person_PhoneNumber, Vehicle_LicensePlate, Order_OrderNumber, DateDelivered)
-                  VALUES($person_PhoneNumber, $vehicle_LicensePlate, $order_OrderNumber, $dDateRegist)";
-                commandInsert.Parameters.AddWithValue("$person_PhoneNumber"   , person_PhoneNumber);
-                commandInsert.Parameters.AddWithValue("$vehicle_LicensePlate" , vehicle_LicensePlate);
-                commandInsert.Parameters.AddWithValue("$order_OrderNumber"    , order_OrderNumber);
-                commandInsert.Parameters.AddWithValue("$dDateRegist"          , dDateRegist);
-                nRowsInserted = commandInsert.ExecuteNonQuery();
-
-                connection.Close();             
-            }
-        }
-
-        [Fact]
-        public void DBTC08()
-        {
-            person_PhoneNumber   = "4372154601"; 
-            vehicle_LicensePlate = "A1A1A1"; 
-            order_OrderNumber    = 1; 
-            dDateRegist          = DateTime.UtcNow.ToString("yyyy-MM-dd"); 
-
-            using (var connection = new SqliteConnection(DB.GetConnectionString()))
-            {
-                connection.Open();
-
-                var commandInsert = connection.CreateCommand();
-
-                //DBTC11 - Adding a new Delivery - Positive scenario 
-                commandInsert.CommandText =
-                @"INSERT INTO Delivery(Person_PhoneNumber, Vehicle_LicensePlate, Order_OrderNumber, DateDelivered)
-                  VALUES($person_PhoneNumber, $vehicle_LicensePlate, $order_OrderNumber, $dDateRegist)";
-                commandInsert.Parameters.AddWithValue("$person_PhoneNumber"   , person_PhoneNumber);
-                commandInsert.Parameters.AddWithValue("$vehicle_LicensePlate" , vehicle_LicensePlate);
-                commandInsert.Parameters.AddWithValue("$order_OrderNumber"    , order_OrderNumber);
-                commandInsert.Parameters.AddWithValue("$dDateRegist"          , dDateRegist);
-                nRowsInserted = commandInsert.ExecuteNonQuery();
-
-                connection.Close();             
-            }
-        }
-
-        [Fact]
-        public void DBTC09()
-        {
-            person_PhoneNumber   = "4372154699"; 
-            vehicle_LicensePlate = "A2A2A2"; 
-            order_OrderNumber    = 1; 
-            dDateRegist          = DateTime.UtcNow.ToString("yyyy-MM-dd"); 
-
-            using (var connection = new SqliteConnection(DB.GetConnectionString()))
-            {
-                connection.Open();
-
-                var commandInsert = connection.CreateCommand();
-
-                commandInsert.CommandText =
-                @"INSERT INTO Delivery(Person_PhoneNumber, Vehicle_LicensePlate, Order_OrderNumber, DateDelivered)
-                  VALUES($person_PhoneNumber, $vehicle_LicensePlate, $order_OrderNumber, $dDateRegist)";
-                commandInsert.Parameters.AddWithValue("$person_PhoneNumber"   , person_PhoneNumber);
-                commandInsert.Parameters.AddWithValue("$vehicle_LicensePlate" , vehicle_LicensePlate);
-                commandInsert.Parameters.AddWithValue("$order_OrderNumber"    , order_OrderNumber);
-                commandInsert.Parameters.AddWithValue("$dDateRegist"          , dDateRegist);
-                nRowsInserted = commandInsert.ExecuteNonQuery();
-
-                connection.Close();             
-            }
-        }
-
-        [Fact]
-        public void DBTC10()
-        {
-            person_PhoneNumber   = "4372154699"; 
-            vehicle_LicensePlate = "A1A1A1"; 
-            order_OrderNumber    = 2; 
-            dDateRegist          = DateTime.UtcNow.ToString("yyyy-MM-dd"); 
-
-            using (var connection = new SqliteConnection(DB.GetConnectionString()))
-            {
-                connection.Open();
-
-                var commandInsert = connection.CreateCommand();
-
-                commandInsert.CommandText =
-                @"INSERT INTO Delivery(Person_PhoneNumber, Vehicle_LicensePlate, Order_OrderNumber, DateDelivered)
-                  VALUES($person_PhoneNumber, $vehicle_LicensePlate, $order_OrderNumber, $dDateRegist)";
-                commandInsert.Parameters.AddWithValue("$person_PhoneNumber"   , person_PhoneNumber);
-                commandInsert.Parameters.AddWithValue("$vehicle_LicensePlate" , vehicle_LicensePlate);
-                commandInsert.Parameters.AddWithValue("$order_OrderNumber"    , order_OrderNumber);
-                commandInsert.Parameters.AddWithValue("$dDateRegist"          , dDateRegist);
-                nRowsInserted = commandInsert.ExecuteNonQuery();
-
-                connection.Close();             
-            }
-        }
-
-        [Fact]
-        public void DBTC11()
-        {
-            using (var connection = new SqliteConnection(DB.GetConnectionString()))
-            {
-                connection.Open();
-
-                var commandInsert = connection.CreateCommand();
-
-                commandInsert.CommandText =
-                @"INSERT INTO Odometer(DateReceived, TimeReceived, ValueReceived, Vehicle_LicensePlate, Person_PhoneNumber)
-                  VALUES($dateReceived, $timeReceived, $valueReceived, $oVehicle_LicensePlate, $oPerson_PhoneNumber)";
-                commandInsert.Parameters.AddWithValue("$dateReceived"          , dateReceived);
-                commandInsert.Parameters.AddWithValue("$timeReceived"          , timeReceived);
-                commandInsert.Parameters.AddWithValue("$valueReceived"         , valueReceived);
-                commandInsert.Parameters.AddWithValue("$oVehicle_LicensePlate" , oVehicle_LicensePlate);
-                commandInsert.Parameters.AddWithValue("$oPerson_PhoneNumber"   , oPerson_PhoneNumber);
-                nRowsInserted = commandInsert.ExecuteNonQuery();
-
-                connection.Close();             
-            }
-        }
-
-        [Fact]
-        public void DBTC12()
-        {
-            dateReceived          = DateTime.UtcNow.ToString("yyyy-MM-dd");
-            timeReceived          = DateTime.UtcNow.ToString("hh:mm");
-            valueReceived         = 12345;
-            oVehicle_LicensePlate = "A1A1A1"; 
-            oPerson_PhoneNumber   = "4372154601"; 
-
-            using (var connection = new SqliteConnection(DB.GetConnectionString()))
-            {
-                connection.Open();
-
-                var commandInsert = connection.CreateCommand();
-
-                commandInsert.CommandText =
-                @"INSERT INTO Odometer(DateReceived, TimeReceived, ValueReceived, Vehicle_LicensePlate, Person_PhoneNumber)
-                  VALUES($dateReceived, $timeReceived, $valueReceived, $oVehicle_LicensePlate, $oPerson_PhoneNumber)";
-                commandInsert.Parameters.AddWithValue("$dateReceived"          , dateReceived);
-                commandInsert.Parameters.AddWithValue("$timeReceived"          , timeReceived);
-                commandInsert.Parameters.AddWithValue("$valueReceived"         , valueReceived);
-                commandInsert.Parameters.AddWithValue("$oVehicle_LicensePlate" , oVehicle_LicensePlate);
-                commandInsert.Parameters.AddWithValue("$oPerson_PhoneNumber"   , oPerson_PhoneNumber);
-                nRowsInserted = commandInsert.ExecuteNonQuery();
-
-                connection.Close();             
-            }
-        }
-
-        [Fact]
-        public void DBTC13()
-        {
-            dateReceived          = DateTime.UtcNow.ToString("yyyy-MM-dd");
-            timeReceived          = DateTime.UtcNow.ToString("hh:mm");
-            valueReceived         = 12345;
-            oVehicle_LicensePlate = "A2A2A2"; 
-            oPerson_PhoneNumber   = "4372154699"; 
-
-            using (var connection = new SqliteConnection(DB.GetConnectionString()))
-            {
-                connection.Open();
-
-                var commandInsert = connection.CreateCommand();
-
-                commandInsert.CommandText =
-                @"INSERT INTO Odometer(DateReceived, TimeReceived, ValueReceived, Vehicle_LicensePlate, Person_PhoneNumber)
-                  VALUES($dateReceived, $timeReceived, $valueReceived, $oVehicle_LicensePlate, $oPerson_PhoneNumber)";
-                commandInsert.Parameters.AddWithValue("$dateReceived"          , dateReceived);
-                commandInsert.Parameters.AddWithValue("$timeReceived"          , timeReceived);
-                commandInsert.Parameters.AddWithValue("$valueReceived"         , valueReceived);
-                commandInsert.Parameters.AddWithValue("$oVehicle_LicensePlate" , oVehicle_LicensePlate);
-                commandInsert.Parameters.AddWithValue("$oPerson_PhoneNumber"   , oPerson_PhoneNumber);
-                nRowsInserted = commandInsert.ExecuteNonQuery();
-
-                connection.Close();             
+                Assert.True(1==nRowsInserted && 1==nRowsNotInserted);             
             }
         }
     }
